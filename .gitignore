@@ -1,0 +1,8 @@
+.envrc
+*~
+*.pyc
+__pycache__
+*.egg-info
+dist
+.hypothesis
+.ipynb_checkpoints
