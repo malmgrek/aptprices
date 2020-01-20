@@ -10,6 +10,10 @@ import pandas as pd
 from aptprices import utils
 from aptprices.utils import compose, pipe, identity
 
+#
+# API documentation: http://pxnet2.stat.fi/api1.html
+#
+
 
 #
 # StatFin: http://pxnet2.stat.fi/PXWeb/api/v1/fi/StatFin/
@@ -38,7 +42,7 @@ from aptprices.utils import compose, pipe, identity
 #
 
 
-
+#
 # Paavo: http://pxnet2.stat.fi/PXWeb/api/v1/fi/
 #        Postinumeroalueittainen_avoin_tieto/
 #
