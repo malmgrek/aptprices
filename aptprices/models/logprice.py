@@ -40,20 +40,34 @@ def coded_time(year):
 
 
 class LogPriceModel(object):
-    def __init__(self, model_src='/home/stastr/sandbox/ashi/ashi/model.stan',
-                 post_mean=None, samples=None, zip_codes=None, **kwargs):
+    """Main interface for handling log-price Stan model
+
+    TODO: => @attr.s(frozen=True)
+
+    """
+
+    def __init__(
+        self,
+        model_src='/home/stastr/sandbox/ashi/ashi/model.stan',
+        post_mean=None,
+        samples=None,
+        zip_codes=None,
+        **kwargs
+    ):
         self.model_src = model_src
         self.zip_codes = zip_codes
         self._samples = samples
         self._model = None
         self._post_mean = post_mean
 
-        # hidden attributes to handle zip code mappings
+        # Hidden attributes to handle zip code mappings
         self._zip_ints = None
         self._area1_ints = None
         self._area2_ints = None
-        training_data, stan_data = self.build_training_data(zip_codes=zip_codes,
-                                                            **kwargs)
+        training_data, stan_data = self.build_training_data(
+            zip_codes=zip_codes,
+            **kwargs
+        )
         self.training_data = training_data
         self.stan_data = stan_data
 
@@ -69,16 +83,21 @@ class LogPriceModel(object):
         area2_int = zip_to_area2_int(zip_code)
         return self._area2_ints.index(area2_int) + 1
 
-    def build_training_data(self, statfin_data=None, paavo_data=None,
-                            zip_codes=None, key=('all', 'all')):
-        # generic easily readable DataFrame for working with results
+    def build_training_data(
+        self,
+        statfin_data=None,
+        paavo_data=None,
+        zip_codes=None,
+        key=('all', 'all')
+    ):
+        # Generic easily readable DataFrame for working with results
         data = statfin_data.loc[zip_codes, :]
         data = data.xs(key, axis=1)
         data.reset_index(inplace=True)
-        data.rename(columns={'Postinumero': 'zip', 
+        data.rename(columns={'Postinumero': 'zip',
                              'Vuosi': 'year',
-                             'lkm_julk': 'count', 
-                             'keskihinta': 'price'}, 
+                             'lkm_julk': 'count',
+                             'keskihinta': 'price'},
                     inplace=True)
         data = data[data['count'] >= 6]  # enforce at least 6 prices
         data['count'] = data['count'].apply(lambda x: int(x))
@@ -89,7 +108,7 @@ class LogPriceModel(object):
             axis=1
         ).values
         data.dropna(inplace=True)
-        # must update zip related lists here as model parametrization
+        # Must update zip related lists here as model parametrization
         # depends on training data
         self._zip_ints = sorted(set(map(zip_to_zip_int, data['zip'])))
         self._area1_ints = sorted(set(map(zip_to_area1_int, data['zip'])))
@@ -99,7 +118,7 @@ class LogPriceModel(object):
         data['area2_ind'] = data['zip'].apply(self.zip_to_area2_ind)
 
         # Data for Stan
-        # TODO change variable names to *_ind in the Stan code
+        # TODO: change variable names to *_ind in the Stan code
         stan_data = {
             'N': len(data),
             'M': len(set(data['zip_ind'])),
@@ -109,7 +128,7 @@ class LogPriceModel(object):
         for col in ['t', 'd', 'log_price', 'count',
                     'zip_ind', 'area1_ind', 'area2_ind']:
             stan_data[col] = list(data[col])
-        return data, stan_data
+        return (data, stan_data)
 
     @property
     def model(self):
@@ -120,8 +139,9 @@ class LogPriceModel(object):
             elif src.endswith('.pickle'):
                 model = pickle.load(open(src), 'rb')
             else:
-                raise(ValueError,
-                      'Attribute `model_src` must be either Pickle or Stan')
+                raise ValueError(
+                    'Attribute `model_src` must be either Pickle or Stan'
+                )
             self._model = model
         return self._model
 
@@ -164,8 +184,11 @@ class LogPriceModel(object):
         return ret
 
     def predict(self, x):
-        """Predict from Stan-compatible model inputs"""
-        # TODO think about other extreme cases needing extrapolation
+        """Predict from Stan-compatible model inputs
+
+        TODO: Think about other extreme cases needing extrapolation
+
+        """
         x = x.copy()
         log_price_pred = []
         X = self.design_matrix(x)
@@ -173,7 +196,7 @@ class LogPriceModel(object):
             X_row = X[i, :]
             area1_ind = int(val['area1_ind'])
             area2_ind = int(val['area2_ind'])
-            # note below the -1 for Pythonic indexing
+            # Note below the -1 for Pythonic indexing
             if val['zip_ind'] is not None:
                 zip_ind = int(val['zip_ind'])
                 result = np.dot(X_row,
@@ -193,9 +216,18 @@ class LogPriceModel(object):
         return x
 
 
-def plot(statfin_data, paavo_data, zip_codes, metadata, log_model=None,
-         fig=None, ages=None, houses=None, cmap='rainbow',
-         ylim=None):
+def plot(
+    statfin_data,
+    paavo_data,
+    zip_codes,
+    metadata,
+    log_model=None,
+    fig=None,
+    ages=None,
+    houses=None,
+    cmap='rainbow',
+    ylim=None
+):
     nrows = int(np.ceil(np.sqrt(len(zip_codes))))
     fig = fig or plt.figure(figsize=(nrows * 4, nrows * 3))
     ages = ages or ('all',)
@@ -204,7 +236,7 @@ def plot(statfin_data, paavo_data, zip_codes, metadata, log_model=None,
                                                len(ages) * len(houses)))
     axs = [fig.add_subplot(nrows, nrows, i)
            for i in range(1, len(zip_codes))]
-    # colors leged
+    # Colors leged
     legend_elements = []
     labels = []
     for j, (age, house) in enumerate(itertools.product(ages, houses)):
@@ -214,7 +246,7 @@ def plot(statfin_data, paavo_data, zip_codes, metadata, log_model=None,
                 edgecolor='w', alpha=.5,
             ))
         labels.append('({}, {})'.format(age, house))
-    # circle sizes another legend
+    # Circle sizes another legend
     ax_helper = axs[0].twinx()
     ax_helper.set_yticks([])
     for count in [10, 50, 100, 250, 500, 1000]:
@@ -225,14 +257,14 @@ def plot(statfin_data, paavo_data, zip_codes, metadata, log_model=None,
     ylim = ylim or \
            (statfin_data.xs(('all', 'all', 'keskihinta'), axis=1).min() - 200.,
             statfin_data.xs(('all', 'all', 'keskihinta'), axis=1).max() + 2000)
-    # plot to each Axis object
+    # Plot to each Axis object
     for i, ax in enumerate(axs):
-        # TODO more general checks
-        # TODO sub optimal performance
-        # try plot predictions
+        # TODO: more general checks
+        # TODO: sub optimal performance
+        # Try plot predictions
         xs_train = statfin_data.loc[zip_codes[i], :].xs(('all', 'all'),
                                                         axis=1)
-        # build prediction inputs -- ugly way
+        # Build prediction inputs -- ugly way
         paavo_slice = \
             paavo_data[['He_vakiy', 'Pinta_ala']].loc[zip_codes[i]]
         index = xs_train.index.append(
@@ -275,7 +307,7 @@ def plot(statfin_data, paavo_data, zip_codes, metadata, log_model=None,
         for j, (age, house) in enumerate(itertools.product(ages, houses)):
             xs = statfin_data.loc[zip_codes[i], :].xs((age, house), axis=1)
             xs.dropna(inplace=True)
-            # plot observation data
+            # Plot observation data
             try:
                 ax.scatter(
                     xs.index,
