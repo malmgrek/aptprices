@@ -4,11 +4,10 @@ import logging
 import requests
 
 import attr
-import numpy as np
 import pandas as pd
 
 from aptprices import utils
-from aptprices.utils import compose, pipe, identity
+from aptprices.utils import compose, identity
 
 #
 # API documentation: http://pxnet2.stat.fi/api1.html
@@ -102,12 +101,18 @@ def tf_get_response(res):
 
     @attr.s(frozen=True)
     class Variable():
+        """Container for variable data
+
+        """
         text = attr.ib()
         values = attr.ib()
         valueTexts = attr.ib()
 
     @attr.s(frozen=True)
     class Metadata():
+        """Container for metadata
+
+        """
         title = attr.ib()
         codes = attr.ib()
 
@@ -180,7 +185,6 @@ def StatFin():
         )
     )
 
-
     @attr.s(frozen=True)
     class Client():
 
@@ -251,7 +255,7 @@ def Paavo():
         )
     )
 
-    attr.s(frozen=True)
+    @attr.s(frozen=True)
     class Client():
 
         # NOTE: There are variables 1, 2, ..., 9
