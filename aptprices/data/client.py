@@ -135,6 +135,37 @@ def tf_get_response(res):
 
 
 def StatFin():
+    """Client for StatFin data service
+
+    Example
+    -------
+
+    .. code-block:: python
+
+        import aptprices as apt
+
+        api = apt.StatFin()
+
+        # Query data for a zip code
+        res = api.apartment_prices_quarterly.post(
+            query_code="Postinumero",
+            query_selection_values=["00940"],
+        )
+
+        # Query metadata
+        metadata = api.apartment_prices_quarterly.get()
+        metadata.Postinumero.valueTexts
+
+        # Query data for twenty zip codes using metadata
+        res = api.apartment_prices_quarterly.post(
+            query_code="Postinumero",
+            query_selection_values=metadata.Postinumero.values[:20]
+        )
+
+    NOTE: There seems to be an issue downloading all data for all zip codes at
+          once. The suggested method is to query data in chunks.
+
+    """
 
     session = requests.Session()
 
@@ -206,6 +237,11 @@ def StatFin():
 
 
 def Paavo():
+    """Client for Paavo service for demographic data
+
+    User interface similar to ``StatFin``.
+
+    """
 
     session = requests.Session()
 
