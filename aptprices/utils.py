@@ -9,7 +9,6 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import progressbar
 from time import sleep
 
 
@@ -107,14 +106,6 @@ MAP_HOUSE = {
 STATFIN_QUARTERLY_PX = 'asu/ashi/nj/statfin_ashi_pxt_112p.px'
 STATFIN_YEARLY_PX = 'asu/ashi/vv/statfin_ashi_pxt_112q.px'
 PAAVO_2018_PX = '2018/paavo_9_koko_2018.px'
-
-
-def get_progress_bar(maxval):
-    return progressbar.ProgressBar(
-        maxval=maxval,
-        widgets=[progressbar.Bar('=', '[', ']'), ' ',
-                 progressbar.Percentage()]
-    )
 
 
 class HousePriceData(object):
