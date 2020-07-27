@@ -36,10 +36,6 @@ def compose2(f, g):
     return h
 
 
-def identity(x):
-    return x
-
-
 def lift(func):
     # Could add func's *args, **kwargs here
     return lambda f: compose2(func, f)
