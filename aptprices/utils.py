@@ -3,13 +3,15 @@ import functools
 import itertools
 import json
 import logging
+import os
+from pathlib import Path
 import requests
+from time import sleep
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from time import sleep
 
 
 logger = logging.getLogger(__file__)
@@ -78,6 +80,36 @@ def flatten(x):
 
 def update_dict(x, y):
     return {**x, **y}
+
+
+def unpack(f):
+    """Unpack arguments
+
+    """
+    def wrapped(args, **kwargs):
+        return f(*args, **kwargs)
+
+    return wrapped
+
+
+def pack(f):
+    """Pack arguments
+
+    """
+    def wrapped(*args, **kwargs):
+        return f(args, **kwargs)
+
+    return wrapped
+
+
+def mkdir(filepath):
+
+    Path(os.path.dirname(filepath)).mkdir(parents=True, exist_ok=True)
+
+    def wrapper(f):
+        return f
+
+    return wrapper
 
 
 MAP_AGE = {
