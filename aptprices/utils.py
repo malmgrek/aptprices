@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import requests
 from time import sleep
+from typing import Callable, Iterable
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -22,7 +23,7 @@ logger = logging.getLogger(__file__)
 #
 
 
-def curryish(f):
+def curryish(f: Callable):
 
     def g(*args, **kwargs):
         return functools.partial(f, *args, **kwargs)
@@ -30,20 +31,22 @@ def curryish(f):
     return g
 
 
-def compose2(f, g):
+def compose2(f: Callable, g: Callable):
+    """Composition of two functions
 
+    """
     def h(*args, **kwargs):
         return f(g(*args, **kwargs))
 
     return h
 
 
-def lift(func):
+def lift(func: Callable):
     # Could add func's *args, **kwargs here
     return lambda f: compose2(func, f)
 
 
-def lift2(func):
+def lift2(func: Callable):
     return (
         lambda f, g: (
             lambda *args, **kwargs: func(
@@ -53,15 +56,15 @@ def lift2(func):
     )
 
 
-def rlift(func):
+def rlift(func: Callable):
     return lambda f: compose2(f, func)
 
 
-def compose(*funcs):
+def compose(*funcs: Callable):
     return functools.partial(functools.reduce, compose2)(funcs)
 
 
-def pipe(arg, *funcs):
+def pipe(arg, *funcs: Callable):
     return compose(*funcs[::-1])(arg)
 
 
@@ -78,11 +81,14 @@ def flatten(x):
     return functools.reduce(lambda cum, this: cum + this, x, [])
 
 
-def update_dict(x, y):
+def update_dict(x: dict, y: dict):
+    """Right-merge of two dicts
+   
+    """
     return {**x, **y}
 
 
-def unpack(f):
+def unpack(f: Callable):
     """Unpack arguments
 
     """
@@ -92,7 +98,7 @@ def unpack(f):
     return wrapped
 
 
-def pack(f):
+def pack(f: Callable):
     """Pack arguments
 
     """
@@ -102,7 +108,7 @@ def pack(f):
     return wrapped
 
 
-def mkdir(filepath):
+def mkdir(filepath: str):
 
     Path(os.path.dirname(filepath)).mkdir(parents=True, exist_ok=True)
 
