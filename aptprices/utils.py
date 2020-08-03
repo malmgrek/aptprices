@@ -1,121 +1,13 @@
 import codecs
-import functools
-import itertools
 import json
 import logging
-import os
-from pathlib import Path
 import requests
 from time import sleep
-from typing import Callable, Iterable
 
-import matplotlib as mpl
-import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 
 
 logger = logging.getLogger(__file__)
-
-
-#
-# Function manipulation
-#
-
-
-def curryish(f: Callable):
-
-    def g(*args, **kwargs):
-        return functools.partial(f, *args, **kwargs)
-
-    return g
-
-
-def compose2(f: Callable, g: Callable):
-    """Composition of two functions
-
-    """
-    def h(*args, **kwargs):
-        return f(g(*args, **kwargs))
-
-    return h
-
-
-def lift(func: Callable):
-    # Could add func's *args, **kwargs here
-    return lambda f: compose2(func, f)
-
-
-def lift2(func: Callable):
-    return (
-        lambda f, g: (
-            lambda *args, **kwargs: func(
-                *[f(*args, **kwargs), g(*args, **kwargs)]
-            )
-        )
-    )
-
-
-def rlift(func: Callable):
-    return lambda f: compose2(f, func)
-
-
-def compose(*funcs: Callable):
-    return functools.partial(functools.reduce, compose2)(funcs)
-
-
-def pipe(arg, *funcs: Callable):
-    return compose(*funcs[::-1])(arg)
-
-
-listmap = curryish(compose(list, map))
-tuplemap = curryish(compose(tuple, map))
-listfilter = curryish(compose(list, filter))
-tuplefilter = curryish(compose(tuple, filter))
-
-
-def flatten(x):
-    """Flatten a list of lists once
-
-    """
-    return functools.reduce(lambda cum, this: cum + this, x, [])
-
-
-def update_dict(x: dict, y: dict):
-    """Right-merge of two dicts
-   
-    """
-    return {**x, **y}
-
-
-def unpack(f: Callable):
-    """Unpack arguments
-
-    """
-    def wrapped(args, **kwargs):
-        return f(*args, **kwargs)
-
-    return wrapped
-
-
-def pack(f: Callable):
-    """Pack arguments
-
-    """
-    def wrapped(*args, **kwargs):
-        return f(args, **kwargs)
-
-    return wrapped
-
-
-def mkdir(filepath: str):
-
-    Path(os.path.dirname(filepath)).mkdir(parents=True, exist_ok=True)
-
-    def wrapper(f):
-        return f
-
-    return wrapper
 
 
 MAP_AGE = {
